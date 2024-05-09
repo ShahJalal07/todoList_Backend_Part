@@ -61,7 +61,7 @@ exports.Login = async (req, res) => {
       });
     }
   } catch (err) {
-    res.status(400).json({
+    res.status(200).json({
       status: "fail",
       data: err,
     });
@@ -81,7 +81,7 @@ exports.updateProfile = async (req, res) => {
       data: user,
     });
   } catch (err) {
-    res.status(400).json({
+    res.status(200).json({
       status: "fail",
       data: err,
     });
@@ -107,7 +107,7 @@ exports.getProfile = async (req, res) => {
       data: user,
     });
   } catch (err) {
-    res.status(400).json({
+    res.status(200).json({
       status: "fail",
       data: err,
     });

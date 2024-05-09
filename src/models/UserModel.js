@@ -3,7 +3,25 @@ const Schema = mongoose.Schema;
 
 const userSchema = new Schema(
   {
-    name: {
+    firstName: {
+      type: String,
+      required: true,
+      validate(value) {
+        if (!value) {
+          throw new Error("Name is required");
+        }
+        if (value.length < 3) {
+          throw new Error("Name must be at least 3 characters");
+        }
+        if (value.length > 50) {
+          throw new Error("Name must be less than 50 characters");
+        }
+        // if (!/^[a-zA-Z]+$/.test(value)) {
+        //   throw new Error("Name must only contain letters");
+        // }
+      },
+    },
+    lastName: {
       type: String,
       required: true,
       validate(value) {
