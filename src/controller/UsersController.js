@@ -11,14 +11,14 @@ exports.Registation = async (req, res) => {
   try {
     const reqBody = req.body;
     const newUser = await userModel.create(reqBody);
-    res.status(201).json({
+    res.status(200).json({
       status: "success",
       data: {
         newUser,
       },
     });
   } catch (err) {
-    res.status(400).json({
+    res.status(200).json({
       status: "fail",
       data: err,
     });
