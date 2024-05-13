@@ -6,7 +6,7 @@ const todotaskController = require("../controller/TodotaskController");
 
 // todo user start
 router.post("/registation", userController.Registation);
-router.get("/login", userController.Login);
+router.post("/login", userController.Login);
 router.put(
   "/updateProfile",
   AuthVarifyMiddleware,

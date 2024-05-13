@@ -32,13 +32,13 @@ exports.Login = async (req, res) => {
     const reqBody = req.body;
     const user = await userModel.findOne({ email: reqBody.email });
     if (!user) {
-      return res.status(400).json({
+      return res.status(200).json({
         status: "fail",
         data: "User not found",
       });
     }
     if (user.password !== reqBody.password) {
-      return res.status(400).json({
+      return res.status(200).json({
         status: "fail",
         data: "Wrong Password",
       });
