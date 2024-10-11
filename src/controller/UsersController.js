@@ -48,15 +48,28 @@ exports.Login = async (req, res) => {
         data: user["email"],
       };
       const token = jwt.sign(payload, "2030405010");
-      const responsibeData = {
+
+      // const responsibeData = {
+      //   email: user["email"],
+      //   name: user["name"],
+      //   ProfilePhoto: user["ProfilePic"],
+      //   date: user["createdAt"],
+      // };
+
+      // Projection
+      const responseData = {
         email: user["email"],
-        name: user["name"],
-        ProfilePhoto: user["ProfilePic"],
-        date: user["createdAt"],
+        firstName: user["firstName"],
+        lastName: user["lastName"],
+        photo: user["ProfilePic"],
       };
+      res
+        .status(200)
+        .json({ status: "success", data: responseData, token: token });
+
       res.status(200).json({
         status: "success",
-        data: responsibeData,
+        data: responseData,
         token: token,
       });
     }
@@ -90,29 +103,40 @@ exports.updateProfile = async (req, res) => {
 // update profile end
 
 // get profile starts
-exports.getProfile = async (req, res) => {
+// exports.getProfile = async (req, res) => {
+//   try {
+//     const email = req.headers.email;
+//     const query = { email: email };
+//     const user = await UserModel.aggregate([
+//       { $match: query },
+//       {
+//         $project: {
+//           password: 0,
+//         },
+//       },
+//     ]);
+//     res.status(200).json({
+//       status: "success",
+//       data: user,
+//     });
+//   } catch (err) {
+//     res.status(200).json({
+//       status: "fail",
+//       data: err,
+//     });
+//   }
+// };
+exports.ProfileDetails = async (req, res) => {
   try {
-    const email = req.headers.email;
-    const query = { email: email };
-    const user = await UserModel.aggregate([
-      { $match: query },
-      {
-        $project: {
-          password: 0,
-        },
-      },
-    ]);
-    res.status(200).json({
-      status: "success",
-      data: user,
-    });
-  } catch (err) {
-    res.status(200).json({
-      status: "fail",
-      data: err,
-    });
+    let email = req.headers.email;
+    let query = { email: email };
+    const user = await UserModel.findOne(query);
+    res.status(200).json({ status: "success", data: user });
+  } catch (error) {
+    res.status(200).json({ status: "fail", data: error });
   }
 };
+
 // get profile end
 
 // email verification starts
@@ -127,7 +151,11 @@ exports.EmailmailVerify = async (req, res) => {
       return res.status(200).json({ status: "fail", data: "User not found" });
     } else {
       // sept -1
-      let createTopt = await OtpModel.create({ email: email, otp: otp });
+      let createTopt = await OtpModel.create({
+        email: email,
+        otp: otp,
+        status: 0,
+      });
       // setp - 2
       let sendEmail = SendEmailUtility(
         email,
@@ -154,7 +182,7 @@ exports.otp = async (req, res) => {
     const updateStatus = -1;
 
     const OTPcheck = await otpModel.aggregate([
-      { $match: { email: email, otp: otp } },
+      { $match: { email: email, otp: otp, status: status } },
       { $count: "total" },
     ]);
 
@@ -175,16 +203,14 @@ exports.otp = async (req, res) => {
 };
 // otp vefication end
 
-// reset password starts
-exports.resetPassword = async (req, res) => {
+// change password starts
+exports.changePassword = async (req, res) => {
   try {
     const email = req.body.email;
     const password = req.body.password;
     const newPassword = req.body.newPassword; // Corrected variable name
     const otp = req.body.otp;
     const UpdateStatus = -1;
-
-    const user = await userModel.findOne({ email: email });
 
     if (!user) {
       // User with provided email not found
@@ -193,18 +219,38 @@ exports.resetPassword = async (req, res) => {
 
     if (user.password !== password) {
       // Previous password does not match
-      return res.status(200).json({ status: "fail", data: "Your previous password does not match" });
+      return res.status(200).json({
+        status: "fail",
+        data: "Your previous password does not match",
+      });
     }
 
+    // const user = await userModel.findOne({ email: email });
+    const user = await UserModel.aggregate([
+      { $match: query },
+      {
+        $project: {
+          email: email,
+        },
+      },
+    ]);
+
     // Update password
-    const updatedUser = await userModel.updateOne({ email: email }, { password: newPassword });
+    const updatedUser = await UserModel.updateOne(
+      { email: email },
+      { password: newPassword }
+    );
 
     if (updatedUser) {
       // Password successfully updated
-      return res.status(200).json({ status: "success", data: "Password successfully reset" });
+      return res
+        .status(200)
+        .json({ status: "success", data: "Password successfully reset" });
     } else {
       // Failed to update password
-      return res.status(200).json({ status: "fail", data: "Failed to reset password" });
+      return res
+        .status(200)
+        .json({ status: "fail", data: "Failed to reset password" });
     }
   } catch (error) {
     // Error handling
@@ -212,4 +258,89 @@ exports.resetPassword = async (req, res) => {
   }
 };
 
-// reset password end
+// change password end
+
+// reset password start
+// exports.resetPasswordRequest = async (req, res) => {
+//   try {
+//     const email = req.body.email;
+//     const newPassword = req.body.newPassword; // Corrected variable name
+//     const otp = req.body.otp;
+
+//     const user = await otpModel.aggregate([
+//       { $match: { email: email, otp: otp, status: -1 } },
+//       { $count: "total" },
+//     ]);
+
+//     if (user.length > 0) {
+//       const updatedUser = await userModel.updateOne({ password: newPassword });
+//       if (updatedUser) {
+//         // Password successfully updated
+//         return res
+//           .status(200)
+//           .json({ status: "success", data: "Password successfully reset" });
+//       } else {
+//         // Failed to update password
+//         return res
+//           .status(200)
+//           .json({ status: "fail", data: "Failed to reset password" });
+//       }
+//     }
+//   } catch (error) {
+//     // Error handling
+//     res.status(500).json({ status: "fail", data: error.message });
+//   }
+// };
+
+exports.resetPasswordRequest = async (req, res) => {
+  try {
+    let email = req.body.email;
+    let otp = req.body.otp;
+    let updatePassword = req.body.newPassword;
+    let updateStatus = -1;
+
+    let otpCheck = await OtpModel.aggregate([
+      { $match: { email: email, otp: otp, status: updateStatus } },
+      { $count: "total" },
+    ]);
+
+    if (otpCheck.length > 0) {
+      let passwordUpdate = await UserModel.updateOne(
+        { email: email },
+        { password: updatePassword }
+      );
+      res.status(200).json({ status: "success", data: passwordUpdate });
+    } else {
+      res.status(200).json({ status: "fail", data: "Invalid OTP" });
+    }
+  } catch (error) {
+    res.status(200).json({ status: "fail", message: error.message });
+  }
+};
+
+exports.profileNameChange = async (req, res) => {
+  try {
+
+    let email = req.body.email;
+    let query = { email: email };
+    const user = await UserModel.findOne(query);
+
+    let firstName = req.body.firstName;
+    let lastName = req.body.lastName;
+
+    
+    
+    if (user) {
+      const updatedUserName = await UserModel.updateOne(
+        { email: email},
+        { email: email, firstName: firstName, lastName: lastName }
+      );
+      res.status(200).json({ status: "success", data: updatedUserName });
+    } else {
+      res.status(200).json({ status: "fail", data: email });
+    }
+    
+  } catch (error) {
+    res.status(400).json({ status: "fail", message: error.message });
+  }
+};

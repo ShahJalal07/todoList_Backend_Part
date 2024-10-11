@@ -12,10 +12,16 @@ router.post(
   AuthVarifyMiddleware,
   userController.updateProfile
 );
-router.get("/profile", AuthVarifyMiddleware, userController.getProfile);
+router.get(
+  "/profile-view",
+  AuthVarifyMiddleware,
+  userController.ProfileDetails
+);
 router.get("/email-verify/:email", userController.EmailmailVerify);
-router.get("/otp-verify/:email/:otp", userController.otp);
-router.post("/reset-password", userController.resetPassword)
+router.get("/otp-verify/:email/:otp/:status", userController.otp);
+router.post("/changePassword", userController.changePassword);
+router.post("/reset-password", userController.resetPasswordRequest);
+router.post("/profileNameChange", userController.profileNameChange);
 // todo user end
 
 // Todo Task start

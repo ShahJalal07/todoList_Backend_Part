@@ -3,7 +3,7 @@ const otpSchema = new mongoose.Schema(
     {
         email: { type: String },
         otp: { type: String },
-        status: { type: Number , default: 0},
+        status: { type: Number ,},
         createdDate: { type: Date, default: Date.now() },
     },
     { versionKey: false }
