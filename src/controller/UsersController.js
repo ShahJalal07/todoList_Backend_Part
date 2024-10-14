@@ -205,59 +205,43 @@ exports.otp = async (req, res) => {
 
 // change password starts
 exports.changePassword = async (req, res) => {
+  
   try {
     const email = req.body.email;
     const password = req.body.password;
     const newPassword = req.body.newPassword; // Corrected variable name
-    const otp = req.body.otp;
-    const UpdateStatus = -1;
-
-    if (!user) {
-      // User with provided email not found
-      return res.status(200).json({ status: "fail", data: "Email not found" });
-    }
-
-    if (user.password !== password) {
-      // Previous password does not match
-      return res.status(200).json({
-        status: "fail",
-        data: "Your previous password does not match",
-      });
-    }
-
-    // const user = await userModel.findOne({ email: email });
-    const user = await UserModel.aggregate([
-      { $match: query },
-      {
-        $project: {
-          email: email,
-        },
-      },
+    
+    const user = await userModel.aggregate([
+      { $match: { email: email, password: password } },
+      { $count: "total" },
     ]);
-
-    // Update password
-    const updatedUser = await UserModel.updateOne(
-      { email: email },
-      { password: newPassword }
-    );
-
-    if (updatedUser) {
-      // Password successfully updated
-      return res
-        .status(200)
-        .json({ status: "success", data: "Password successfully reset" });
-    } else {
-      // Failed to update password
-      return res
-        .status(200)
-        .json({ status: "fail", data: "Failed to reset password" });
+    
+    if (user.length > 0) {
+      const updatedUser = await userModel.updateOne({ password: newPassword });
+      if (updatedUser) {
+        // Password successfully updated
+        return res
+          .status(200)
+          .json({ status: "success", data: "Password successfully reset" });
+      } else {
+        // Failed to update password
+        return res
+          .status(200)
+          .json({ status: "fail", data: "Failed to reset password" });
+      }
+    } 
+    else {
+      // User with provided email not found
+      return res.status(200).json({ status: "fail", data: "something went wrong" });
     }
-  } catch (error) {
+    
+}
+  catch (error) {
     // Error handling
     res.status(500).json({ status: "fail", data: error.message });
   }
 };
-
+  
 // change password end
 
 // reset password start
