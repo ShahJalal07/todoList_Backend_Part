@@ -131,7 +131,13 @@ exports.ProfileDetails = async (req, res) => {
     let email = req.headers.email;
     let query = { email: email };
     const user = await UserModel.findOne(query);
-    res.status(200).json({ status: "success", data: user });
+    const responseData = {
+      email: user["email"],
+      firstName: user["firstName"],
+      lastName: user["lastName"],
+      photo: user["ProfilePic"],
+    };
+    res.status(200).json({ status: "success", data: responseData });
   } catch (error) {
     res.status(200).json({ status: "fail", data: error });
   }
@@ -313,7 +319,6 @@ exports.profileNameChange = async (req, res) => {
     let lastName = req.body.lastName;
 
     
-    
     if (user) {
       const updatedUserName = await UserModel.updateOne(
         { email: email},
@@ -326,5 +331,48 @@ exports.profileNameChange = async (req, res) => {
     
   } catch (error) {
     res.status(400).json({ status: "fail", message: error.message });
+  }
+};
+
+exports.profilePictureChange = async (req, res) => {
+  
+  try {
+    const email = req.body.email;
+    const ProfilePic = req.body.ProfilePic;
+     // Corrected variable name
+    
+    const user = await userModel.aggregate([
+      { $match: { email: email } },
+      { $count: "total" },
+    ]);
+    const responseData = {
+      email: user["email"],
+      firstName: user["firstName"],
+      lastName: user["lastName"],
+      photo: user["ProfilePic"],
+    };
+    if (user.length > 0) {
+      const updatedUser = await userModel.updateOne({ ProfilePic: ProfilePic });
+      if (updatedUser) {
+        // Password successfully updated
+        return res
+          .status(200)
+          .json({ status: "success", data: "Profile picture successfully updated" });
+      } else {
+        // Failed to update password
+        return res
+          .status(200)
+          .json({ status: "fail", data: "Failed to update profile picture" });
+      }
+    } 
+    else {
+      // User with provided email not found
+      return res.status(200).json({ status: "fail", data: "something went wrong" });
+    }
+    
+}
+  catch (error) {
+    // Error handling
+    res.status(500).json({ status: "fail", data: error.message });
   }
 };

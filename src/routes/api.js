@@ -22,6 +22,7 @@ router.get("/otp-verify/:email/:otp/:status", userController.otp);
 router.post("/changePassword", userController.changePassword);
 router.post("/reset-password", userController.resetPasswordRequest);
 router.post("/profileNameChange", userController.profileNameChange);
+router.post("/profilePictureChange", userController.profilePictureChange);
 // todo user end
 
 // Todo Task start
