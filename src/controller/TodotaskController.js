@@ -1,6 +1,5 @@
 const todomodel = require("../models/ToDoTask");
 
-
 // create task model start
 exports.createTask = async (req, res) => {
   try {
@@ -8,7 +7,7 @@ exports.createTask = async (req, res) => {
     reqBody.email = req.headers.email;
     // console.log(req.headers.email)
     const newTask = await todomodel.create(reqBody);
-    res.status(201).json({
+    res.status(200).json({
       status: "success",
       data: newTask,
     });
@@ -85,7 +84,6 @@ exports.statusCount = async (req, res) => {
   try {
     const status = req.params.status;
     const email = req.headers.email;
-    console.log(email);
     const result = await todomodel.aggregate([
       { $match: { status: status, email: email } },
       {
@@ -96,7 +94,7 @@ exports.statusCount = async (req, res) => {
           status: 1,
 
           date: { $dateToString: { format: "%d-%m-%Y", date: "$date" } },
-          
+
           time: { $dateToString: { format: "%H:%M:%S", date: "$date" } },
         },
       },
@@ -134,4 +132,3 @@ exports.count = async (req, res) => {
   }
 };
 // todo list count end
-
